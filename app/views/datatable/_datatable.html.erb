@@ -61,6 +61,7 @@
     var oTable = jQuery('#rdatatable').dataTable( {
 
       /* Custom Options */
+		<% @jsoptions.length -%>
       <% @jsoptions.each_pair do |k,v| -%>
         "<%= k %>": <%= v %>,
       <% end -%>
@@ -70,8 +71,8 @@
         <% @columns.each_pair do |name,attrs| -%>
           <% if attrs[:type] == 'link' -%>
             /* <%= name.to_s %> */ {
-              "fnRender": function ( oObj ) {
-                return '<a href="' + "<%= attrs[:link] %>".replace( /<%= attrs[:replace] %>/i, oObj.aData[<%= @columns.keys.index( attrs[:replace].to_sym ) %>] ) + '">' + oObj.aData[<%= @columns.keys.index( name.to_sym ) %>] + '</a>';
+              "mRender": function ( oObj,type,full ) {
+                return '<a href="' + "<%= attrs[:link] %>".replace( /<%= attrs[:replace] %>/i, full[<%= @columns.keys.index( attrs[:replace].to_sym ) %>] ) + '">' + full[<%= @columns.keys.index( name.to_sym ) %>] + '</a>';
               },
               "aTargets": [ <%= @columns.keys.index( name ) %> ]
             }<%= "," unless @columns.keys.last == name %>
