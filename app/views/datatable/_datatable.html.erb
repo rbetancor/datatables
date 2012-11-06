@@ -61,7 +61,6 @@
     var oTable = jQuery('#rdatatable').dataTable( {
 
       /* Custom Options */
-		<% @jsoptions.length -%>
       <% @jsoptions.each_pair do |k,v| -%>
         "<%= k %>": <%= v %>,
       <% end -%>
@@ -71,16 +70,21 @@
         <% @columns.each_pair do |name,attrs| -%>
           <% if attrs[:type] == 'link' -%>
             /* <%= name.to_s %> */ {
-              "mRender": function ( oObj,type,full ) {
+              "mRender": function ( data,type,full ) {
                 return '<a href="' + "<%= attrs[:link] %>".replace( /<%= attrs[:replace] %>/i, full[<%= @columns.keys.index( attrs[:replace].to_sym ) %>] ) + '">' + full[<%= @columns.keys.index( name.to_sym ) %>] + '</a>';
               },
               "aTargets": [ <%= @columns.keys.index( name ) %> ]
-            }<%= "," unless @columns.keys.last == name %>
+            }
           <% elsif attrs[:type] == 'hidden' -%>
-            /* <%= name.to_s %> */ { "bVisible": false, "aTargets": [ <%= @columns.keys.index( name ) %> ] }<%= "," unless @columns.keys.last == name %>
+            /* <%= name.to_s %> */ { 
+				  "bVisible": false, "aTargets": [ <%= @columns.keys.index( name ) %> ] 
+				}
           <% else -%>
-            /* <%= name.to_s %> */ { "aTargets": [ <%= @columns.keys.index( name ) %> ] }<%= "," unless @columns.keys.last == name %>
+            /* <%= name.to_s %> */ { 
+				  "aTargets": [ <%= @columns.keys.index( name ) %> ] 
+				}
           <% end -%>
+			 <%= "," unless @columns.keys.last == name %>
         <% end -%>
       ],
       

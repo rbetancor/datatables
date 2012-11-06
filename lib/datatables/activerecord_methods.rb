@@ -124,7 +124,7 @@ class << ActiveRecord::Base
   	    if col == "version" # Special output formatting for version column
   	      row.push( a_row[ col ]=="0" ? '-' : a_row[ col ] )
   	    elsif col != ' ' # General Output
-  	      row.push( a_row[ col ])
+  	      row.push( "#{col}" => a_row[ col ])
   	    end
   	  end
   	  output['aaData'].push(row)
