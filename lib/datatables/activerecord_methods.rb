@@ -119,13 +119,13 @@ class << ActiveRecord::Base
   	           "aaData" => [] }
   
   	records.each do |a_row|
-  	  #row = []
+  	  row = {}
   	  columns.each_with_index do |col,i|
   	    if col == "version" # Special output formatting for version column
   	      row.push( a_row[ col ]=="0" ? '-' : a_row[ col ] )
   	    elsif col != ' ' # General Output
   	      #row.push( {"#{col}" => a_row[ col ]}.to_s)
-			row[col.to_sym] = a_row[col]
+			row["#{col}"] = a_row[col]
   	    end
   	  end
   	  output['aaData'].push(row)
