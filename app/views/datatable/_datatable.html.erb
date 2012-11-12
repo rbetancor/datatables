@@ -71,9 +71,9 @@
           <% if attrs[:type] == 'link' -%>
             /* <%= name.to_s %> */ {
               "mRender": function ( data,type,full ) {
-                return '<a href="' + "<%= attrs[:link] %>".replace( /<%= attrs[:replace] %>/i, full[<%= @columns.keys.index( attrs[:replace].to_sym ) %>] ) + '">' + full[<%= @columns.keys.index( name.to_sym ) %>] + '</a>';
+                return '<a href="' + "<%= attrs[:link] %>".replace( /<%= attrs[:replace] %>/i, full['<%= attrs[:replace].to_sym %>'] ) + '">' + full['<%= name.to_sym ) %>'] + '</a>';
               },
-              "aTargets": [ <%= @columns.keys.index( name ) %> ]
+              "aTargets": [ '<%= name %>' ]
             }
           <% elsif attrs[:type] == 'hidden' -%>
             /* <%= name.to_s %> */ { 
