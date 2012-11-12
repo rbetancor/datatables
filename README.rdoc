@@ -114,6 +114,9 @@ Note that the edit link path utilizes the :id field in the database table to aut
   
                                                }) %>
 
+== Expandable rows
+
+  
 = Why use this plugin?
 
 It is the easiest way to integrate dynamic datatables using the jQuery datatables plugin into your rails app.

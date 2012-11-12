@@ -219,3 +219,12 @@ table.dataTable thead td:active {
 	-webkit-overflow-scrolling: touch;
 }
 
+tfoot input {
+  margin: 0.5em 0;
+  width: 100%;
+  color: #444;
+}
+
+tfoot input.search_init {
+  color: #999;
+}
