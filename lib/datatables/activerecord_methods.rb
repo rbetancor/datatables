@@ -75,10 +75,10 @@ class << ActiveRecord::Base
   	full_columns.each_with_index do |col,i|
   	  if params['bSearchable_' + i.to_s] == "true" and !params['sSearch_' + i.to_s].empty?
         # Date filtering
-        if params['sSearch_' + i.to_s].include?('~') do
-          if params['sSearch_' + i.to_s][0] == '~' do
+        if params['sSearch_' + i.to_s].include?('~') 
+          if params['sSearch_' + i.to_s][0] == '~'
             filters.push("#{col} < '#{params['sSearch_'+i.to_s]}'")
-          elsif params['sSearch_'+i.to_s][-1] == '~' do
+          elsif params['sSearch_'+i.to_s][-1] == '~' 
             filters.push("#{col} > '#{params['sSearch_'+i.to_s]}'")            
           else
             dates = params['sSearch_' + i.to_s].split('~')
