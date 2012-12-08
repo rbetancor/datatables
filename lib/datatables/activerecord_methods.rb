@@ -77,7 +77,7 @@ class << ActiveRecord::Base
         # Date filtering
         if params['sSearch_' + i.to_s].include?('~') 
           dates = params['sSearch_' + i.to_s].split('~')
-          unless dates[0].nil? && dates[1].nil? do
+          unless dates[0].nil? && dates[1].nil?
             if params['sSearch_' + i.to_s][0] == '~'
               filters.push("#{col} < '#{Date.parse(dates[1]).strftime("%Y/%m/%d")}'")
             elsif params['sSearch_'+i.to_s][-1] == '~'
