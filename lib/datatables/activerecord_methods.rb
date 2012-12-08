@@ -83,7 +83,7 @@ class << ActiveRecord::Base
             elsif params['sSearch_'+i.to_s][-1] == '~'
               filters.push("#{col} >= '#{Date.parse(dates[0]).strftime("%Y/%m/%d")}'")            
             else
-              filters.push("#{col} BETWEEN '#{dates[0]}' AND '#{dates[1]}'")
+              filters.push("#{col} BETWEEN '#{Date.parse(dates[0]).strftime("%Y/%m/%d")}' AND '#{Date.parse(dates[1]).strftime("%Y/%m/%d")}'")
             end
           end
         else
