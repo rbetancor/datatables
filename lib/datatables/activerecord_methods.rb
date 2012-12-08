@@ -76,13 +76,15 @@ class << ActiveRecord::Base
   	  if params['bSearchable_' + i.to_s] == "true" and !params['sSearch_' + i.to_s].empty?
         # Date filtering
         if params['sSearch_' + i.to_s].include?('~') 
-          if params['sSearch_' + i.to_s][0] == '~'
-            filters.push("#{col} < '#{params['sSearch_'+i.to_s]}'")
-          elsif params['sSearch_'+i.to_s][-1] == '~' 
-            filters.push("#{col} > '#{params['sSearch_'+i.to_s]}'")            
-          else
-            dates = params['sSearch_' + i.to_s].split('~')
-            filters.push("#{col} BETWEEN '#{dates[0]}' AND '#{dates[1]}'")
+          dates = params['sSearch_' + i.to_s].split('~')
+          unless dates[0].nil? && dates[1].nil? do
+            if params['sSearch_' + i.to_s][0] == '~'
+              filters.push("#{col} < '#{Date.parse(dates[1]).strftime("%Y/%m/%d")}'")
+            elsif params['sSearch_'+i.to_s][-1] == '~'
+              filters.push("#{col} > '#{Date.parse(dates[0]).strftime("%Y/%m/%d")}'")            
+            else
+              filters.push("#{col} BETWEEN '#{dates[0]}' AND '#{dates[1]}'")
+            end
           end
         else
   	     filters.push( "#{col} LIKE '%#{params['sSearch_' + i.to_s]}%'" )
