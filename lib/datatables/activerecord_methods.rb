@@ -74,7 +74,19 @@ class << ActiveRecord::Base
   	filters = []
   	full_columns.each_with_index do |col,i|
   	  if params['bSearchable_' + i.to_s] == "true" and !params['sSearch_' + i.to_s].empty?
-  	    filters.push( "#{col} LIKE '%#{params['sSearch_' + i.to_s]}%'" )
+        # Date filtering
+        if params['sSearch_' + i.to_s].include?('~') do
+          if params['sSearch_' + i.to_s][0] == '~' do
+            filters.push("#{col} < '#{params['sSearch_'+i.to_s]}'")
+          elsif params['sSearch_'+i.to_s][-1] == '~' do
+            filters.push("#{col} > '#{params['sSearch_'+i.to_s]}'")            
+          else
+            dates = params['sSearch_' + i.to_s].split('~')
+            filters.push("#{col} BETWEEN '#{dates[0]}' AND '#{dates[1]}'")
+          end
+        else
+  	     filters.push( "#{col} LIKE '%#{params['sSearch_' + i.to_s]}%'" )
+       end
   	  end
   	end
   	filter_str = filters.join(' AND ') unless filters.empty?
