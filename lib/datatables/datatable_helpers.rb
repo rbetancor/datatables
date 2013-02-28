@@ -15,7 +15,7 @@ module Datatables
       
       @col_str = ""
       @columns.each_pair do |key,col|
-		  next if col[:type] == 'expand' 
+        next if col[:type] == 'expand' 
         @col_str += "," unless @columns.keys.first == key
         @col_str += key.to_s
         if !col[:column].nil?

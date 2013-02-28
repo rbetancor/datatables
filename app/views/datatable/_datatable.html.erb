@@ -8,11 +8,11 @@
   <% end -%>
 </div>
 <% end -%>
-<table cellpadding="0" cellspacing="0" border="0" class="display" id="rdatatable">
+<table cellpadding="0" cellspacing="0" border="0" class="display table sortable" id="rdatatable">
   <thead>
     <tr>
       <% @columns.each_pair do |key,col| -%>
-        <th width="<%= col[:width] %>"><%= col[:label] || key.to_s.humanize %></th>
+        <th style="width:<%= col[:width] %>"><%= col[:label] || key.to_s.humanize %></th>
       <% end -%>
     </tr>
   </thead>
@@ -24,7 +24,19 @@
   <tfoot>
     <tr>
       <% @columns.each_pair do |key,col| -%>
-        <th><input type="text" name="search_<%= key.to_s %>" value="Search <%= col[:label] || key.to_s.humanize %>" class="search_init" rel="<%= @columns.keys.index(key) %>" /></th>
+        <th>
+          <% unless col[:searchable].nil? -%>
+            <% if col[:type] == 'boolean' -%>
+              <select name="search_<%= key.to_s %>" class="search_init" rel="<%= @columns.keys.index(key) %>">
+                <option value=""></option>
+                <option value="1">Si</option>
+                <option value="0">No</option>
+              </select>
+            <% else -%>
+              <input type="text" name="search_<%= key.to_s %>" value="Search <%= col[:label] || key.to_s.humanize %>" class="search_init" rel="<%= @columns.keys.index(key) %>" />
+            <% end -%>
+          <% end -%>
+        </th>
       <% end -%>
     </tr>
   </tfoot>
@@ -58,33 +70,84 @@
   }
 
   jQuery(document).ready(function() {
-    var oTable = jQuery('#rdatatable').dataTable( {
+    var oTable = jQuery('#rdatatable').dataTable({
 
       /* Custom Options */
       <% @jsoptions.each_pair do |k,v| -%>
-        "<%= k %>": <%= v %>,
+        "<%= k %>": <%=raw v %>,
       <% end -%>
 
       /* Visible / Hidden columns & Formatting */
-      "aoColumnDefs": [
+      "aoColumns": [
         <% @columns.each_pair do |name,attrs| -%>
-          <% if attrs[:type] == 'link' -%>
+        <% if attrs[:type] == 'link' -%>
             /* <%= name.to_s %> */ {
               "mRender": function ( data,type,full ) {
-                return '<a href="' + "<%= attrs[:link] %>".replace( /<%= attrs[:replace] %>/i, full['<%= attrs[:replace].to_sym %>'] ) + '">' + full['<%= name.to_sym ) %>'] + '</a>';
+                return '<a href="' + "<%= attrs[:link] %>".replace( /<%= attrs[:replace] %>/i, full['<%=attrs[:replace].to_sym%>'] ) + '">' + full['<%= name.to_sym %>'] + '</a>';
               },
-              "aTargets": [ '<%= name %>' ]
+              "mData": [ '<%= name %>' ]
             }
           <% elsif attrs[:type] == 'hidden' -%>
-            /* <%= name.to_s %> */ { 
-				  "bVisible": false, "aTargets": [ <%= @columns.keys.index( name ) %> ] 
-				}
+            /* <%= name.to_s %> */ {
+              "bVisible": false, 
+              "mData": [ '<%= name %>' ]
+            }
+          <% elsif attrs[:type] == 'clink' -%>
+            /* <%= name.to_s %> */ {
+              "mRender": function ( data, type, full ) {
+                return full[<%= @columns.keys.index( name.to_sym ) %>];
+              },
+              "mData": [ '<%= name %>' ]
+            }
+          <% elsif attrs[:type] == 'expand' -%>
+            /* <%= name.to_s %> */ {
+              "bSearchable": "false",
+              "bSortable": "false",
+              "mData": null,
+              "mRender": function ( data, type, full) {
+                return '<img src="/assets/icons/fugue/chevron-expand.png" width="16" height="16">';
+              }
+            }
+          <% elsif attrs[:type] == 'boolean' -%>
+              /* <%= name.to_s %> */ {
+              "bSortable": "false",
+              "mData": [ '<%= name %>' ],
+              "mRender": function ( data, type, full) {
+                var value = (full['<%= name %>'] == true) ? 'Si':'No';
+                return value;
+              }
+            }
+          <% elsif attrs[:type] == 'custom' -%>
+            /* <%= name.to_s %> */ {
+              "bSearchable": "false",
+              "bSortable": "false",
+              "mData": null,
+              "mRender": function ( data, type, full) {
+                return '<img src="/assets/icons/fugue/chevron-expand.png" width="16" height="16">';
+              }
+            }
+          <% elsif attrs[:type] == 'date' -%>
+            /* <%= name.to_s %> */ {
+              "bSearchable": "true",
+              "type" : "date-range",
+              "mData": [ '<%= name %>' ],
+              "mRender": function ( data, type, full) {
+                return Date.parse(full['<%= name %>']).toString("dd/MM/yy");
+              }
+            }
+          <% elsif attrs[:type] == 'time' -%>
+            /* <%= name.to_s %> */ {
+              "mData": [ '<%= name %>' ],
+              "mRender": function ( data, type, full) {
+                return Date.parseExact(full['<%= name %>'],"yyyy-MM-ddTHH:mm:ssZ").toString("HH:mm");
+              }
+            }
           <% else -%>
-            /* <%= name.to_s %> */ { 
-				  "aTargets": [ <%= @columns.keys.index( name ) %> ] 
-				}
+            /* <%= name.to_s %> */ {
+              "mData": [ '<%= name %>' ]
+            }
           <% end -%>
-			 <%= "," unless @columns.keys.last == name %>
+          <%= "," unless @columns.keys.last == name %>
         <% end -%>
       ],
       
@@ -99,12 +162,52 @@
 
       /* Boilerplate Options */
       "sPaginationType": "full_numbers",
-      "aLengthMenu": [[10, 25, 50, 100, 500], [10, 25, 50, 100, 500]],
+      "aLengthMenu": [[25, 50, 100, 500], [25, 50, 100, 500]],
       "bProcessing": true,
       "bServerSide": true,
       "sAjaxSource": '/rdtable/<%= @modelname %><%= "/#{@col_str}" %><%= @scope.nil? ? '' : "/#{@scope}" %><%= @id.nil? ? '' : "/#{@id}" %>'
-    } );
-    
+    }).columnFilter(
+         {"sPlaceHolder" : "tfoot",
+          "sRangeFormat": "{from}{to}",
+          "aoColumns": [
+            <% @columns.each_pair do |name,attrs| -%>
+               <% if attrs[:type] == 'date' -%>
+                 /* <%= name.to_s %> */ {
+                   "type": "date-range"
+                 }
+               <% else -%>
+                 /* <%= name.to_s %> */ {
+                   "type": "null"
+                 }
+               <% end -%>
+               <%= "," unless @columns.keys.last == name %>
+             <% end -%>
+            ]});
+   
+   oTable.dataTableExt.afnFiltering.push(
+    function( oSettings, aData, iDataIndex ) {
+      if ( typeof aData._date == 'undefined' ) {
+        aData._date = new Date.parse(aData[1]).getTime();
+        alert(aData[1]);
+      }
+      
+      if ( minDateFilter && !isNaN(minDateFilter) ) {
+        if ( aData._date < minDateFilter ) {
+          return false;
+        }
+      }
+      
+      if ( maxDateFilter && !isNaN(maxDateFilter) ) {
+        if ( aData._date > maxDateFilter ) {
+          return false;
+        }
+      }
+      
+      return true;
+    }
+  );
+   
+
   <% unless @pptions[:selectable].nil? or !@pptions[:selectable] -%>
     jQuery('#rd_clear_selections').click( function () {
       gaiSelected = [];
@@ -133,7 +236,30 @@
   	} );  
   <% end -%>
 
-    jQuery("tfoot input").keyup( function () {
+  $('#rdatatable tbody td img').live( 'click', function () {
+    var nTr = this.parentNode.parentNode;
+    if ( this.src.match('chevron-collapse') )
+    {
+      /* This row is already open - close it */
+      this.src = "/assets/icons/fugue/chevron-expand.png";
+      oTable.fnClose( nTr );
+    }
+    else
+    {
+      /* Open this row */
+      this.src = "/assets/icons/fugue/chevron-collapse.png";
+      oTable.fnOpen( nTr, fnRowDetails(nTr), 'details' );
+    }
+  } );
+
+     jQuery("tfoot input[type=text]").keyup( function () {
+      /* Filter on the column (the index) of this element */
+      oTable.fnFilter( this.value, jQuery(this).attr('rel') );
+      gaiSelected = []; // clear the selection on filter
+      rd_toggle_buttons();
+    } );
+
+     jQuery("tfoot select").change( function () {
       /* Filter on the column (the index) of this element */
       oTable.fnFilter( this.value, jQuery(this).attr('rel') );
       gaiSelected = []; // clear the selection on filter
